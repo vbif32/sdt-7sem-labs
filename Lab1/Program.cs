@@ -44,8 +44,17 @@ namespace Lab1
             var result = new Dictionary<string, Dictionary<string, dynamic>>(parameters.Length);
             foreach (var param in parameters)
             {
-                var tmp = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonConvert.SerializeObject(characteristics));
-                result.Add(param, tmp);
+                result.Add(param, new Dictionary<string, dynamic>
+                {
+                    {"start_date",null},
+                    {"end_date",null},
+                    {"num_records",0},
+                    {"min_COLUMN",float.MaxValue},
+                    {"min_time",null},
+                    {"max_COLUMN",float.MinValue},
+                    {"max_time",null},
+                    {"avg_COLUMN",0.00}
+                });
             }
                 
 
