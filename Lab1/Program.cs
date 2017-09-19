@@ -1,11 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Lab1
 {
@@ -17,7 +15,7 @@ namespace Lab1
             //    @"http://www.neracoos.org/erddap/tabledap/E05_aanderaa_all.json?station%2Cmooring_site_desc%2Cwater_depth%2Ctime%2Ccurrent_speed%2Ccurrent_speed_qc%2Ccurrent_direction%2Ccurrent_direction_qc%2Ccurrent_u%2Ccurrent_u_qc%2Ccurrent_v%2Ccurrent_v_qc%2Ctemperature%2Ctemperature_qc%2Cconductivity%2Cconductivity_qc%2Csalinity%2Csalinity_qc%2Csigma_t%2Csigma_t_qc%2Ctime_created%2Ctime_modified%2Clongitude%2Clatitude%2Cdepth&time%3E=2015-08-25T15%3A00%3A00Z&time%3C=2016-12-05T14%3A00%3A00Z";
             //var wc = new WebClient();
             //var json = wc.DownloadString(link);
-            var path = @"C:\Users\нано\Downloads\E05_aanderaa_all_1769_d432_5004.json";
+            var path = @"C:\Users\Vbif3\Downloads\E05_aanderaa_all_1769_d432_5004.json";
             var json = File.ReadAllText(path);
 
             var characteristics = new Dictionary<string, dynamic>
@@ -29,7 +27,7 @@ namespace Lab1
                 {"min_time",null},
                 {"max_COLUMN",float.MinValue},
                 {"max_time",null},
-                {"avg_COLUMN",0.00},
+                {"avg_COLUMN",0.00}
             };
             var parameters = new[] { "current_speed", "temperature", "salinity" };
             var columnNumber = new List<int>(parameters.Length);
@@ -44,14 +42,18 @@ namespace Lab1
                     columnNumber.Add(i);
 
             var result = new Dictionary<string, Dictionary<string, dynamic>>(parameters.Length);
-            foreach (string param in parameters)
-                result.Add(param, characteristics);
+            foreach (var param in parameters)
+            {
+                var tmp = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(JsonConvert.SerializeObject(characteristics));
+                result.Add(param, tmp);
+            }
+                
 
             for (var i = 0; i < rows.Count(); i++)
                 for (var j = 0; j < columnNumber.Count; j++)
-                    if (Math.Abs(rows[i].Value<float>(columnNumber[j] + 1)) < 0.1)
+                    if (rows[i].Value<float>(columnNumber[j] + 1) == 0)
                     {
-                        var date = rows[i][dateColumn].Value<string>();
+                        var date = rows[i][dateColumn].Value<DateTime>();
                         var value = rows[i][columnNumber[j]].Value<float>();
                         if (i == 0)
                             result[parameters[j]]["start_date"] = date;
@@ -70,13 +72,12 @@ namespace Lab1
 
                         result[parameters[j]]["num_records"]++;
                         result[parameters[j]]["avg_COLUMN"] += value;
-
-                        if (i == rows.Count() - 1)
-                        {
-                            result[parameters[j]]["end_date"] = date;
-                            result[parameters[j]]["avg_COLUMN"] /= result[parameters[j]]["num_records"];
-                        }
+                        result[parameters[j]]["end_date"] = date;
                     }
+
+            foreach(var param in parameters)
+                result[param]["avg_COLUMN"] /= result[param]["num_records"];
+
             var resultJson = JsonConvert.SerializeObject(result);
             resultJson = resultJson.Replace("{", "{\n");
             resultJson = resultJson.Replace("}", "\n}");
@@ -84,6 +85,5 @@ namespace Lab1
             Console.WriteLine(resultJson);
             Console.Read();
         }
-
     }
 }
