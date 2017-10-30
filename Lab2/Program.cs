@@ -17,8 +17,11 @@ namespace Lab2
             //var data = File.ReadAllLines(path).Skip(1);
             var ss = new[]
             {
-                "1 1 2",
-                "1 1 10"
+                "1 1 1",
+                "1 1 10",
+                "50 1 10",
+                //"1 1 2",
+                //"1 1 10"
             };
             foreach (var s in ss)
                 FuturePassengers.Add(new Passenger(s.Split().Select(int.Parse)));
@@ -32,15 +35,17 @@ namespace Lab2
                 if (FuturePassengers.Count != 0 && FuturePassengers.Any(p => p.Time <= _time))
                 {
                     var passes = FuturePassengers.Where(p => p.Time <= _time);
-                    PresentPassengers.AddRange(passes);
-                    FuturePassengers.RemoveAll(p => p.Time <= _time);
                     foreach (var pass in passes)
                         if (pass.DestFloor - pass.StartFloor > 0)
                             _elevator.UpButtons.Add(pass.StartFloor);
                         else
                             _elevator.DownButtons.Add(pass.StartFloor);
+                    PresentPassengers.AddRange(passes);
+                    FuturePassengers.RemoveAll(p => p.Time <= _time);
                     _elevator.MoveTo(PresentPassengers.First().StartFloor);
                 }
+                else if (PresentPassengers.Count != 0)
+                    _elevator.MoveTo(PresentPassengers.First().DestFloor);
                 else
                 {
                     Console.WriteLine($"{_time,4} Лифт простаивает");
@@ -54,15 +59,14 @@ namespace Lab2
         {
             Console.WriteLine($"{_time,4} {_elevator.StringState}");
             _time++;
-            if (_elevator.State == ElevatorState.Вoarding)
-                for (var i = 0; i < PresentPassengers.Count; i++)
-                {
-                    var pass = PresentPassengers.ElementAt(i);
-                    if (_elevator.CurrentFloor == pass.StartFloor)
-                        _elevator.PressButton(pass.DestFloor);
-                    if (_elevator.CurrentFloor == pass.DestFloor)
-                        PresentPassengers.RemoveAt(i);
-                }
+            if (_elevator.State != ElevatorState.Вoarding) return;
+            for (var i = 0; i < PresentPassengers.Count; i++)
+            {
+                var pass = PresentPassengers.ElementAt(i);
+                if (_elevator.CurrentFloor == pass.StartFloor)
+                    _elevator.PressButton(pass.DestFloor);
+            }
+            PresentPassengers.RemoveAll(p => _elevator.CurrentFloor == p.DestFloor);
         }
 
         private class Passenger

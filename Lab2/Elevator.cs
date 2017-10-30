@@ -49,6 +49,8 @@ namespace Lab2
                         MoveTo(Buttons.First());
                     break;
             }
+            if (Buttons.Contains(CurrentFloor) || UpButtons.Contains(CurrentFloor) || DownButtons.Contains(CurrentFloor))
+                StateBoarding();
         }
 
         private void StateBoarding()
