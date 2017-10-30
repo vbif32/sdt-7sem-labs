@@ -7,9 +7,9 @@ namespace Lab2
     internal static class Program
     {
         private static int _time;
-        private static readonly Queue<Passenger> _futurePassengers = new Queue<Passenger>();
-        private static readonly List<Passenger> _presentPassengers = new List<Passenger>();
-        private static Elevator elevator;
+        private static readonly List<Passenger> FuturePassengers = new List<Passenger>();
+        private static readonly List<Passenger> PresentPassengers = new List<Passenger>();
+        private static Elevator _elevator;
 
         private static void Main(string[] args)
         {
@@ -17,27 +17,29 @@ namespace Lab2
             //var data = File.ReadAllLines(path).Skip(1);
             var ss = new[]
             {
-                "1 1 3",
-                "8 3 9",
-                "11 7 1"
+                "1 1 2",
+                "1 1 10"
             };
             foreach (var s in ss)
-                _futurePassengers.Enqueue(new Passenger(s.Split().Select(int.Parse)));
+                FuturePassengers.Add(new Passenger(s.Split().Select(int.Parse)));
 
             Console.WriteLine("Time State");
-            elevator = new Elevator();
+            _elevator = new Elevator();
             OnStateChanged();
 
-            while (_futurePassengers.Count != 0 || _presentPassengers.Count != 0)
-                if (_futurePassengers.Count != 0 && _futurePassengers.Peek()?.Time <= _time)
+
+            while (FuturePassengers.Count != 0 || PresentPassengers.Count != 0)
+                if (FuturePassengers.Count != 0 && FuturePassengers.Any(p => p.Time <= _time))
                 {
-                    var pass = _futurePassengers.Dequeue();
-                    _presentPassengers.Add(pass);
-                    if (pass.DestFloor - pass.StartFloor > 0)
-                        elevator.UpButtons.Add(pass.StartFloor);
-                    else
-                        elevator.DownButtons.Add(pass.StartFloor);
-                    elevator.MoveTo(pass.StartFloor);
+                    var passes = FuturePassengers.Where(p => p.Time <= _time);
+                    PresentPassengers.AddRange(passes);
+                    FuturePassengers.RemoveAll(p => p.Time <= _time);
+                    foreach (var pass in passes)
+                        if (pass.DestFloor - pass.StartFloor > 0)
+                            _elevator.UpButtons.Add(pass.StartFloor);
+                        else
+                            _elevator.DownButtons.Add(pass.StartFloor);
+                    _elevator.MoveTo(PresentPassengers.First().StartFloor);
                 }
                 else
                 {
@@ -50,19 +52,18 @@ namespace Lab2
 
         public static void OnStateChanged()
         {
-            Console.WriteLine($"{_time,4} {elevator.StringState}");
+            Console.WriteLine($"{_time,4} {_elevator.StringState}");
             _time++;
-            if (elevator.State == ElevatorState.Вoarding)
-                for (var i = 0; i < _presentPassengers.Count; i++)
+            if (_elevator.State == ElevatorState.Вoarding)
+                for (var i = 0; i < PresentPassengers.Count; i++)
                 {
-                    var pass = _presentPassengers.ElementAt(i);
-                    if (elevator.CurrentFloor == pass.StartFloor)
-                        elevator.PressButton(pass.DestFloor);
-                    if (elevator.CurrentFloor == pass.DestFloor)
-                        _presentPassengers.RemoveAt(i);
+                    var pass = PresentPassengers.ElementAt(i);
+                    if (_elevator.CurrentFloor == pass.StartFloor)
+                        _elevator.PressButton(pass.DestFloor);
+                    if (_elevator.CurrentFloor == pass.DestFloor)
+                        PresentPassengers.RemoveAt(i);
                 }
         }
-
 
         private class Passenger
         {

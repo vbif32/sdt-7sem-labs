@@ -15,8 +15,8 @@ namespace Lab2
             _state = ElevatorState.Idle;
             StringState = $"Лифт стоит на {CurrentFloor} этаже";
             Buttons = new List<int>();
-            UpButtons = new List<int>();
-            DownButtons = new List<int>();
+            UpButtons = new SortedSet<int>();
+            DownButtons = new SortedSet<int>();
         }
 
         public ElevatorState State
@@ -31,8 +31,8 @@ namespace Lab2
 
         public int CurrentFloor { get; private set; }
         public List<int> Buttons { get; }
-        public List<int> UpButtons { get; }
-        public List<int> DownButtons { get; }
+        public SortedSet<int> UpButtons { get; }
+        public SortedSet<int> DownButtons { get; }
 
         private void StateIdle()
         {
@@ -53,18 +53,11 @@ namespace Lab2
 
         private void StateBoarding()
         {
-            switch (State)
-            {
-                case ElevatorState.MovingUp:
-                    UpButtons.Remove(CurrentFloor);
-                    break;
-                case ElevatorState.MovingDown:
-                    UpButtons.Remove(CurrentFloor);
-                    break;
-            }
             StringState = "Лифт открыл двери";
             State = ElevatorState.Вoarding;
             Buttons.Remove(CurrentFloor);
+            UpButtons.Remove(CurrentFloor);
+            DownButtons.Remove(CurrentFloor);
             StateIdle();
         }
 
