@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Lab2
@@ -49,7 +50,8 @@ namespace Lab2
                         MoveTo(Buttons.First());
                     break;
             }
-            if (Buttons.Contains(CurrentFloor) || UpButtons.Contains(CurrentFloor) || DownButtons.Contains(CurrentFloor))
+            if (Buttons.Contains(CurrentFloor) || UpButtons.Contains(CurrentFloor) ||
+                DownButtons.Contains(CurrentFloor))
                 StateBoarding();
         }
 
@@ -93,12 +95,21 @@ namespace Lab2
                 StateMovingDown();
         }
 
-        public void PressButton(int floor)
+        public void PressButton(int floor) => Buttons.Add(floor);
+        public void PressUpButton(int floor) => UpButtons.Add(floor);
+        public void PressDownButton(int floor) => DownButtons.Add(floor);
+
+        public void Update()
         {
-            Buttons.Add(floor);
+            if (Buttons.Count != 0)
+                MoveTo(Buttons.First());
+            if (UpButtons.Count != 0)
+                MoveTo(UpButtons.First());
+            if (DownButtons.Count != 0)
+                MoveTo(DownButtons.First());
         }
 
-        public void MoveTo(int floor)
+        private void MoveTo(int floor)
         {
             if (CurrentFloor > floor)
                 StateMovingDown(floor);
@@ -107,6 +118,15 @@ namespace Lab2
             else
                 StateBoarding();
             StateIdle();
+        }
+
+        public override string ToString()
+        {
+            var func = new Func<string, int, string>((s, i) => s + " " + i);
+            return $"{CurrentFloor} " +
+                   $"B[{Buttons.Aggregate("", func)}] " +
+                   $"UP[{UpButtons.Aggregate("", func)}] " +
+                   $"DB[{DownButtons.Aggregate("", func)}]";
         }
     }
 }

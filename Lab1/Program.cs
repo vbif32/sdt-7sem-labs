@@ -19,11 +19,11 @@ namespace Lab1
 
             try
             {
-                var path = @"C:\Users\нано\Downloads\E05_aanderaa_all_1769_d432_5004.json";
+                const string path = @"C:\Users\нано\Downloads\E05_aanderaa_all_1769_d432_5004.json";
                 startJson = File.ReadAllText(path);
                 resultJson = NeracoosParse(startJson, parameters);
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 var retries = 3;
                 while (retries >= 0)
